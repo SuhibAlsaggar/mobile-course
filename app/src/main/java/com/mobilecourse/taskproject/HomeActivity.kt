@@ -3,13 +3,13 @@ package com.mobilecourse.taskproject
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.pm.PackageManager
+import android.location.LocationListener
+import android.location.LocationManager
 import android.os.Bundle
 import android.os.Handler
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.LocationServices
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
@@ -19,12 +19,15 @@ class HomeActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityHomeBinding
     private lateinit var auth: FirebaseAuth
-    private lateinit var fusedLocationClient: FusedLocationProviderClient
+    private lateinit var locationManager: LocationManager
+    private  var counter = 0
     private val handler = Handler()
-    private val locationUpdateInterval = 1000L // 1 second
 
     companion object {
         private const val LOCATION_PERMISSION_REQUEST_CODE = 1001
+        private const val PERMISSION_REQUEST_CODE = 100
+        private const val MIN_TIME_BW_UPDATES: Long = 1000 // 1 second
+        private const val MIN_DISTANCE_CHANGE_FOR_UPDATES = 0f // 0 meters
     }
 
     @SuppressLint("SetTextI18n")
@@ -37,7 +40,8 @@ class HomeActivity : AppCompatActivity() {
         val email = auth.currentUser!!.email
         binding.WelcomeText.text = "Welcome: $email"
 
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+
+        locationManager = getSystemService(LOCATION_SERVICE) as LocationManager
 
         if (ContextCompat.checkSelfPermission(
                 this,
@@ -55,18 +59,17 @@ class HomeActivity : AppCompatActivity() {
     }
 
     private fun startLocationUpdates() {
-        handler.postDelayed(locationRunnable, locationUpdateInterval)
+        handler.postDelayed(locationRunnable, MIN_TIME_BW_UPDATES)
     }
 
     private val locationRunnable = object : Runnable {
         override fun run() {
-            getLastLocation()
-            handler.postDelayed(this, locationUpdateInterval)
+            requestLocationUpdates()
+            handler.postDelayed(this, MIN_TIME_BW_UPDATES)
         }
     }
 
-    @SuppressLint("SetTextI18n")
-    private fun getLastLocation() {
+    private fun requestLocationUpdates() {
         if (ActivityCompat.checkSelfPermission(
                 this,
                 Manifest.permission.ACCESS_FINE_LOCATION
@@ -75,50 +78,37 @@ class HomeActivity : AppCompatActivity() {
                 Manifest.permission.ACCESS_COARSE_LOCATION
             ) != PackageManager.PERMISSION_GRANTED
         ) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
             return
         }
-        fusedLocationClient.lastLocation
-            .addOnSuccessListener { location ->
-                if (location != null) {
-                    val lat = location.latitude
-                    val lng = location.longitude
-                    binding.LatText.text = "Latitude: $lat"
-                    binding.LngText.text = "Longitude: $lng"
-                } else {
-                    binding.LatText.text = "Latitude: N/A"
-                    binding.LngText.text = "Longitude: N/A"
-                }
-            }
-            .addOnFailureListener { _ ->
-                // Handle failure
-                binding.LatText.text = "Error getting location"
-                binding.LngText.text = "Error getting location"
-            }
+        locationManager.requestLocationUpdates(
+            LocationManager.GPS_PROVIDER,
+            MIN_TIME_BW_UPDATES,
+            MIN_DISTANCE_CHANGE_FOR_UPDATES,
+            locationListener
+        )
     }
 
-    @SuppressLint("SetTextI18n")
+    private val locationListener: LocationListener = LocationListener { location ->
+        val latitude = location.latitude
+        val longitude = location.longitude
+
+        binding.LatText.text = "Latitude: $latitude"
+        binding.LngText.text = "Longitude: $longitude"
+        counter += 1
+        binding.locationCounter.text = counter.toString()
+    }
+
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<String>,
         grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        when (requestCode) {
-            LOCATION_PERMISSION_REQUEST_CODE -> {
-                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    startLocationUpdates()
-                } else {
-                    binding.LatText.text = "Location permission denied"
-                    binding.LngText.text = "Location permission denied"
-                }
-            }
+        if (requestCode == PERMISSION_REQUEST_CODE && grantResults.isNotEmpty() &&
+            grantResults[0] == PackageManager.PERMISSION_GRANTED
+        ) {
+            // Permission granted, request location updates
+            requestLocationUpdates()
         }
     }
 
