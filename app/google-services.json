@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "195186961051",
+    "project_id": "mobilecourse-9b6a2",
+    "storage_bucket": "mobilecourse-9b6a2.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:195186961051:android:63ce09f13a5a9999f8743e",
+        "android_client_info": {
+          "package_name": "com.mobilecourse.taskproject"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCVFpuzeg929dwNZiMynxYWz5huyfnTesk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
