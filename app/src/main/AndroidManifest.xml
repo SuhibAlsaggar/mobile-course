@@ -30,6 +30,18 @@
             android:name=".TaskCreateActivity"
             android:exported="false" />
 
+        <activity
+            android:name=".signup_login_page"
+            android:exported="false" />
+
+        <activity
+            android:name=".HomePage"
+            android:exported="false" />
+
+        <activity
+            android:name=".MapActivity"
+            android:exported="false" />
+
         <service
             android:name=".locationservice.LocationService"
             android:foregroundServiceType="location" />
@@ -37,10 +49,7 @@
         <activity
             android:name=".HomeActivity"
             android:exported="false" />
-        <activity
-            android:name=".AuthActivity"
-            android:exported="false"
-            android:theme="@style/Theme.TaskProject" />
+
         <activity
             android:name=".MainActivity"
             android:exported="true" >
@@ -54,6 +63,11 @@
         <meta-data
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />
+
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value=""/>
+
     </application>
 
 </manifest>

@@ -50,15 +50,14 @@ class MainActivity : AppCompatActivity() {
         val intent1 = Intent(this, TaskCreateActivity::class.java)
         startActivity(intent1)
 
-//        var intent = Intent(this, AuthActivity::class.java)
-//        auth = Firebase.auth
-//        val user = auth.currentUser
-//
-//        if (user != null)
-//            intent = Intent(this, HomeActivity::class.java)
-//
-//        startActivity(intent)
-//        finish()
+        var intent = Intent(this, signup_login_page::class.java)
+       auth = Firebase.auth
+       val user = auth.currentUser
+       if (user != null)
+            intent = Intent(this, HomePage::class.java)
+
+        startActivity(intent)
+        finish()
     }
 
 }
