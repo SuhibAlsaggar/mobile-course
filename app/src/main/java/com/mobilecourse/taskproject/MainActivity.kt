@@ -32,8 +32,6 @@ class MainActivity : AppCompatActivity() {
         )
 
         binding = ActivityMainBinding.inflate(layoutInflater)
-        auth = Firebase.auth
-
 
         if (hasLocationPermission()) {
             Intent(applicationContext, LocationService::class.java).apply {
@@ -48,16 +46,14 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
 
-//        var intent = Intent(this, AuthActivity::class.java)
-//        val intent = Intent(this, MapActivity::class.java)
-//        auth = Firebase.auth
-//        val user = auth.currentUser
-//
-//        if (user != null)
-//            intent = Intent(this, HomeActivity::class.java)
-//
-//        startActivity(intent)
-//        finish()
+        var intent = Intent(this, signup_login_page::class.java)
+       auth = Firebase.auth
+       val user = auth.currentUser
+       if (user != null)
+            intent = Intent(this, HomePage::class.java)
+
+        startActivity(intent)
+        finish()
     }
 
 }
