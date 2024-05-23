@@ -31,6 +31,9 @@
             android:exported="false" />
 
         <activity
+            android:name=".testactivity"
+            android:exported="false" />
+        <activity
             android:name=".signup_login_page"
             android:exported="false" />
 
