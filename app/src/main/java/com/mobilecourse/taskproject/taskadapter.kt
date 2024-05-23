@@ -39,7 +39,7 @@ class taskAdapter(
         }
 
         holder.imageCheckbox.setImageResource(
-            if (item.isChecked) R.drawable.ic_checkbox_checked else R.drawable.ic_checkbox_unchecked
+            if (item.isChecked) R.drawable.ic_checkbox_checked else R.drawable.baseline_add_24
         )
 
         holder.itemView.setOnClickListener {
@@ -50,7 +50,7 @@ class taskAdapter(
             item.isChecked = !item.isChecked
             updateFirebase(item, position)
             holder.imageCheckbox.setImageResource(
-                if (item.isChecked) R.drawable.ic_checkbox_checked else R.drawable.ic_checkbox_unchecked
+                if (item.isChecked) R.drawable.ic_checkbox_checked else R.drawable.baseline_add_24
             )
         }
     }

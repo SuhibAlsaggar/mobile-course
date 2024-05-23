@@ -12,57 +12,32 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.mobilecourse.taskproject.databinding.ActivityHomePageBinding
+import com.mobilecourse.taskproject.databinding.ActivityMainBinding
 import java.text.SimpleDateFormat
 import java.util.Date
 
 class HomePage : AppCompatActivity() {
-    private lateinit var buttonNext: Button
-
-    private val auth: FirebaseAuth by lazy { FirebaseAuth.getInstance() }
-    private val firestore: FirebaseFirestore by lazy { FirebaseFirestore.getInstance() }
+    private lateinit var binding: ActivityHomePageBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
-        setContentView(R.layout.activity_home_page)
+        binding = ActivityHomePageBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         val date = Date()
         val format = SimpleDateFormat("dd/MM/yyyy")
         val formattedDate = format.format(date)
         val dateTextView = findViewById<TextView>(R.id.xml_date_time_text_view)
-        dateTextView.text = formattedDate
+        binding.xmlDateTimeTextView.text = formattedDate
 
-        buttonNext = findViewById(R.id.button_next)
-        fetchUserRole()
-
-        buttonNext.setOnClickListener {
-            val intent = Intent(this, NextActivity::class.java) // Replace NextActivity with your actual activity
-            startActivity(intent)
-        }
+//        binding.buttonNext.setOnClickListener {
+//            val intent = Intent(this, NextActivity::class.java) // Replace NextActivity with your actual activity
+//            startActivity(intent)
+//        }
 
         // Load the fragment
         replaceFragment(taskscroolfragment())
-    }
-
-    private fun fetchUserRole() {
-        val userId = auth.currentUser?.uid
-        if (userId != null) {
-            firestore.collection("users").document(userId)
-                .get()
-                .addOnSuccessListener { document ->
-                    if (document != null) {
-                        val role = document.getString("role")
-                        if (role == "some_role") {
-                            buttonNext.visibility = View.VISIBLE
-                        } else {
-                            buttonNext.visibility = View.GONE
-                        }
-                    }
-                }
-                .addOnFailureListener { e ->
-                    e.printStackTrace()
-                }
-        }
     }
 
     private fun replaceFragment(fragment: Fragment) {

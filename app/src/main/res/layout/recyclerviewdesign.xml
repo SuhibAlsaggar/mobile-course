@@ -42,7 +42,7 @@
 
                 android:layout_marginLeft="350dp"
                 android:layout_marginBottom="20dp"
-                android:src="@drawable/ic_checkbox_unchecked"
+                android:src="@drawable/ic_checkbox_checked"
                 app:layout_constraintBottom_toBottomOf="@id/linearLayout_cardview"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="@id/linearLayout_cardview"
