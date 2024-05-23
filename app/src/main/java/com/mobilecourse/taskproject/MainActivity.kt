@@ -1,5 +1,6 @@
 package com.mobilecourse.taskproject
 
+import HomePage
 import com.mobilecourse.taskproject.locationservice.LocationService
 import com.mobilecourse.taskproject.locationservice.hasLocationPermission
 import android.Manifest
@@ -52,7 +53,7 @@ class MainActivity : AppCompatActivity() {
        if (user != null)
             intent = Intent(this, HomePage::class.java)
 
-        startActivity(intent)
+        //startActivity(intent)
         finish()
     }
 

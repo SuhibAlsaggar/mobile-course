@@ -6,7 +6,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.mobilecourse.taskproject.R
-import com.mobilecourse.taskproject.taskdata
+
 import java.io.IOException
 import java.util.Locale
 
@@ -18,7 +18,7 @@ class taskAdapter(
     private lateinit var geocoder: Geocoder
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.recyclerviewdesign, parent, false)
+        val view = LayoutInflater.from(parent.context).inflate(R.layout.fragment_taskscroolfragment, parent, false)
         geocoder = Geocoder(parent.context, Locale.getDefault())
         return MyViewHolder(view)
     }
@@ -54,7 +54,6 @@ class taskAdapter(
             )
         }
     }
-
 
     override fun getItemCount(): Int = data.size
 

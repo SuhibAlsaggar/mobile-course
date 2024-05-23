@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -13,40 +13,63 @@
         android:layout_width="match_parent"
         android:layout_height="200dp"
         android:background="@drawable/curved_background"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
         tools:ignore="MissingConstraints" />
 
     <TextView
         android:id="@+id/xml_date_time_text_view"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentEnd="true"
+        android:layout_width="124dp"
+        android:layout_height="77dp"
         android:layout_marginStart="110dp"
         android:layout_marginTop="52dp"
         android:layout_marginEnd="117dp"
         android:text="TextView"
-        android:textSize="30dp" />
+        android:textSize="30dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageButton
+        android:id="@+id/button_next_day"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="44dp"
+        android:backgroundTint="@color/background"
+        app:layout_constraintStart_toEndOf="@+id/xml_date_time_text_view"
+        app:srcCompat="@drawable/ic_next_button"
+        tools:layout_editor_absoluteY="43dp" />
+
+    <ImageButton
+        android:id="@+id/button_previous_day"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="44dp"
+        android:backgroundTint="@color/background"
+        app:layout_constraintEnd_toStartOf="@+id/xml_date_time_text_view"
+        app:srcCompat="@drawable/ic_previous_button"
+        tools:layout_editor_absoluteY="43dp" />
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/framelayout"
-        android:layout_width="match_parent"
-        android:layout_height="646dp"
-        android:layout_below="@+id/view"
-        android:layout_alignParentBottom="true"
-        android:layout_marginTop="0dp"
-        android:layout_marginBottom="0dp">
+        android:layout_width="399dp"
+        android:layout_height="749dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/view"
+        app:layout_constraintVertical_bias="1.0"
+        tools:layout_editor_absoluteX="0dp">
 
         <ImageButton
             android:id="@+id/button_next"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="328dp"
-            android:layout_marginTop="476dp"
+            android:layout_marginStart="300dp"
+            android:layout_marginTop="596dp"
+            android:backgroundTint="@color/background2"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:srcCompat="@drawable/baseline_add_24" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 
-</RelativeLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>
