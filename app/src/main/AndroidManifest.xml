@@ -40,10 +40,7 @@
         <activity
             android:name=".HomeActivity"
             android:exported="false" />
-        <activity
-            android:name=".AuthActivity"
-            android:exported="false"
-            android:theme="@style/Theme.TaskProject" />
+
         <activity
             android:name=".MainActivity"
             android:exported="true">
