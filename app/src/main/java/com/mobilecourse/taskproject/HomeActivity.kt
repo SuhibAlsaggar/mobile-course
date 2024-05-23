@@ -21,9 +21,9 @@ class HomeActivity : AppCompatActivity() {
         binding = ActivityHomeBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        auth = Firebase.auth
-        val email = auth.currentUser!!.email
-        binding.WelcomeText.text = "Welcome: $email"
+//        auth = Firebase.auth
+//        val email = auth.currentUser!!.email
+//        binding.WelcomeText.text = "Welcome: $email"
 
         var task: Task
         val taskId = intent.getStringExtra("TASK_ID")!!
