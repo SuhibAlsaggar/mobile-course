@@ -6,13 +6,14 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.mobilecourse.taskproject.R
+import com.mobilecourse.taskproject.datamodels.Task
 
 import java.io.IOException
 import java.util.Locale
 
 class taskAdapter(
-    private val data: List<taskdata>,
-    private val onItemClickListener: (taskdata, Int) -> Unit
+    private val data: List<Task>,
+    private val onItemClickListener: (Task, Int) -> Unit
 ) : RecyclerView.Adapter<taskAdapter.MyViewHolder>() {
 
     private lateinit var geocoder: Geocoder
@@ -25,34 +26,21 @@ class taskAdapter(
 
     override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
         val item = data[position]
-        holder.textName.text = item.name
-        holder.textDate.text = item.date
+        holder.textName.text = item.title
+        holder.textDate.text = item.date!!.toDate().toString()
 
-        // Perform reverse geocoding only if address is empty
-        if (item.address.isEmpty()) {
-            reverseGeocode(item.latitude, item.longitude) { address ->
-                item.address = address
+        reverseGeocode(item.latLng!!.latitude, item.latLng.longitude) { address ->
                 holder.textAddress.text = address
             }
-        } else {
-            holder.textAddress.text = item.address
-        }
 
         holder.imageCheckbox.setImageResource(
-            if (item.isChecked) R.drawable.ic_checkbox_checked else R.drawable.baseline_add_24
+            if (item.subtasks.all { subTask -> subTask.completed!! }) R.drawable.ic_checkbox_checked else R.drawable.ic_checkbox_unchecked
         )
 
         holder.itemView.setOnClickListener {
             onItemClickListener(item, position)
         }
 
-        holder.imageCheckbox.setOnClickListener {
-            item.isChecked = !item.isChecked
-            updateFirebase(item, position)
-            holder.imageCheckbox.setImageResource(
-                if (item.isChecked) R.drawable.ic_checkbox_checked else R.drawable.baseline_add_24
-            )
-        }
     }
 
     override fun getItemCount(): Int = data.size

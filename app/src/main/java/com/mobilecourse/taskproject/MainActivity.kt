@@ -1,6 +1,5 @@
 package com.mobilecourse.taskproject
 
-import HomePage
 import com.mobilecourse.taskproject.locationservice.LocationService
 import com.mobilecourse.taskproject.locationservice.hasLocationPermission
 import android.Manifest
@@ -47,17 +46,17 @@ class MainActivity : AppCompatActivity() {
             binding.Text.text = "Location permissions NOT granted"
         }
 
-        setContentView(binding.root)
-        val intent1 = Intent(this, TaskCreateActivity::class.java)
-        startActivity(intent1)
+
 
         var intent = Intent(this, signup_login_page::class.java)
+
        auth = Firebase.auth
+//        auth.signOut()
        val user = auth.currentUser
        if (user != null)
             intent = Intent(this, HomePage::class.java)
 
-        //startActivity(intent)
+        startActivity(intent)
         finish()
     }
 

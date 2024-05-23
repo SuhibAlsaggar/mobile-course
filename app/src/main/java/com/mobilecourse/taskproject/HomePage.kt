@@ -1,3 +1,4 @@
+package com.mobilecourse.taskproject
 
 import android.content.Intent
 import android.os.Bundle
@@ -8,49 +9,48 @@ import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.mobilecourse.taskproject.R
-import com.mobilecourse.taskproject.taskscroolfragment
-import com.mobilecourse.taskproject.testactivity
+import com.mobilecourse.taskproject.databinding.ActivityHomePageBinding
+import com.mobilecourse.taskproject.databinding.ActivityMainBinding
+import com.mobilecourse.taskproject.datamodels.Task
+import com.mobilecourse.taskproject.firebaseservice.TasksAgent
 import taskAdapter
+import taskdata
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Calendar
+import java.util.Date
 
-class HomePage : AppCompatActivity(){
+class HomePage : AppCompatActivity() {
 
-    private lateinit var buttonNext: Button
-    private lateinit var buttonPreviousDay: ImageButton
-    private lateinit var buttonNextDay: ImageButton
-    private lateinit var dateTextView: TextView
+
+    private lateinit var binding: ActivityHomePageBinding
+
     private var currentDate = Date()
     private val format = SimpleDateFormat("dd/MM/yyyy")
 
     private val auth: FirebaseAuth by lazy { FirebaseAuth.getInstance() }
     private val firestore: FirebaseFirestore by lazy { FirebaseFirestore.getInstance() }
 
-    private lateinit var taskList: MutableList<taskdata>
+    private lateinit var taskList: MutableList<Task>
     private lateinit var adapter: taskAdapter
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
-        setContentView(R.layout.activity_home_page)
+
+        binding = ActivityHomePageBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
         taskList = mutableListOf()
         adapter = taskAdapter(taskList) { item, position ->
             // Handle item click here if needed
         }
 
-        dateTextView = findViewById(R.id.xml_date_time_text_view) // Assuming the ID is correct
-
         updateDateTextView()
-
-        buttonNext = findViewById(R.id.button_next)
         fetchUserRole()
 
-        buttonNext.setOnClickListener {
+        binding.buttonNext.setOnClickListener {
             val intent = Intent(
                 this,
                 testactivity::class.java
@@ -58,13 +58,11 @@ class HomePage : AppCompatActivity(){
             startActivity(intent)
         }
 
-        buttonPreviousDay = findViewById(R.id.button_previous_day)
-        buttonPreviousDay.setOnClickListener {
+        binding.buttonPreviousDay.setOnClickListener {
             updateDate(-1)
         }
 
-        buttonNextDay = findViewById(R.id.button_next_day)
-        buttonNextDay.setOnClickListener {
+        binding.buttonNextDay.setOnClickListener {
             updateDate(1)
         }
 
@@ -80,9 +78,9 @@ class HomePage : AppCompatActivity(){
                     if (document != null) {
                         val role = document.getString("role")
                         if (role == "admin") {
-                            buttonNext.visibility = View.VISIBLE
+                            binding.buttonNext.visibility = View.VISIBLE
                         } else {
-                            buttonNext.visibility = View.GONE
+                            binding.buttonNext.visibility = View.GONE
                         }
                     }
                 }
@@ -100,28 +98,18 @@ class HomePage : AppCompatActivity(){
         updateDateTextView()
         loadTasksForDate(currentDate)
     }
-
     private fun updateDateTextView() {
         val formattedDate = format.format(currentDate)
-        dateTextView.text = formattedDate
+        binding.xmlDateTimeTextView.text = formattedDate
     }
 
     private fun loadTasksForDate(date: Date) {
-        val formattedDate = format.format(date)
-        firestore.collection("tasks")
-            .whereEqualTo("date", formattedDate)
-            .get()
-            .addOnSuccessListener { documents ->
-                taskList.clear()
-                for (document in documents) {
-                    val task = document.toObject(taskdata::class.java)
-                    taskList.add(task)
-                }
+        TasksAgent.getTasksForDate(date, null){ tasks ->
+            tasks.forEach{
+                taskList.add(it)
                 adapter.notifyDataSetChanged()
             }
-            .addOnFailureListener { exception ->
-                exception.printStackTrace()
-            }
+        }
     }
 
     private fun replaceFragment(fragment: Fragment) {

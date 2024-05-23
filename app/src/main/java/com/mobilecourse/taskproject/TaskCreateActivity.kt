@@ -15,8 +15,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
-import com.google.firebase.database.DatabaseReference
-import com.google.firebase.database.FirebaseDatabase
 import java.util.Date
 
 
@@ -27,7 +25,7 @@ class TaskCreateActivity : AppCompatActivity() {
     private lateinit var taskAssignee: EditText
     private lateinit var createTaskButton: Button
     private lateinit var fusedLocationClient: FusedLocationProviderClient
-    private lateinit var databaseReference: DatabaseReference
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -39,7 +37,6 @@ class TaskCreateActivity : AppCompatActivity() {
         createTaskButton = findViewById(R.id.createTaskButton)
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
-        databaseReference = FirebaseDatabase.getInstance().getReference("tasks")
 
         createTaskButton.setOnClickListener { createTask() }
     }
