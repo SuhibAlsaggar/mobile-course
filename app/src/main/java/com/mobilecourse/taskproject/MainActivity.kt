@@ -6,7 +6,9 @@ import com.mobilecourse.taskproject.locationservice.hasLocationPermission
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import com.google.firebase.auth.FirebaseAuth
@@ -18,6 +20,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var auth: FirebaseAuth
     private lateinit var binding: ActivityMainBinding
 
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,7 +48,8 @@ class MainActivity : AppCompatActivity() {
         }
 
         setContentView(binding.root)
-
+        val intent1 = Intent(this, TaskCreateActivity::class.java)
+        startActivity(intent1)
 
         var intent = Intent(this, signup_login_page::class.java)
        auth = Firebase.auth
