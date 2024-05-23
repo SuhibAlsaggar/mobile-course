@@ -12,6 +12,8 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import com.mobilecourse.taskproject.databinding.ActivityMainBinding
+import com.mobilecourse.taskproject.firebaseservice.TasksAgent
+import java.util.Date
 
 class MainActivity : AppCompatActivity() {
     private lateinit var auth: FirebaseAuth
@@ -44,7 +46,6 @@ class MainActivity : AppCompatActivity() {
         }
 
         setContentView(binding.root)
-
 
 //        var intent = Intent(this, AuthActivity::class.java)
 //        auth = Firebase.auth
