@@ -50,13 +50,19 @@ public class TasksAgent {
                     val tasks = mutableListOf<Task>()
                     for (document in task.result!!) {
                         val data = document.data
+                        val subtasks = (data["subtasks"] as List<HashMap<String, Any>>).map {
+                            SubTask(
+                                description = it["description"] as String,
+                                completed = it["completed"] as Boolean
+                            )
+                        }
                         val taskItem = Task(
                             id = document.id,
                             assigneeId = data["assigneeId"] as? String ?: "",
                             title = data["title"] as? String ?: "",
                             date = data["date"] as? Timestamp,
                             latLng = data["latLng"] as? GeoPoint,
-                            subtasks = data["subtasks"] as? List<SubTask> ?: emptyList()
+                            subtasks = subtasks
                         )
                         tasks.add(taskItem)
                     }
@@ -76,13 +82,19 @@ public class TasksAgent {
                     val document = task.result
                     if (document?.exists() == true) {
                         val data = document.data ?: return@addOnCompleteListener
+                        val subtasks = (data["subtasks"] as List<HashMap<String, Any>>).map {
+                            SubTask(
+                                description = it["description"] as String,
+                                completed = it["completed"] as Boolean
+                            )
+                        }
                         val retrievedTask = Task(
                             id = document.id,
                             assigneeId = data["assigneeId"] as? String ?: "",
                             title = data["title"] as? String ?: "",
                             date = data["date"] as? Timestamp,
                             latLng = data["latLng"] as? GeoPoint,
-                            subtasks = data["subtasks"] as? List<SubTask> ?: emptyList()
+                            subtasks = subtasks
                         )
                         onTaskRetrieved(retrievedTask)
                     } else {

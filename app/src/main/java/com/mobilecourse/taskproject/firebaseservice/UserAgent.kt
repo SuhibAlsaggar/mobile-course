@@ -4,6 +4,7 @@ import com.google.firebase.Timestamp
 import com.google.firebase.firestore.GeoPoint
 import com.mobilecourse.taskproject.datamodels.SubTask
 import com.mobilecourse.taskproject.datamodels.Task
+import com.mobilecourse.taskproject.datamodels.User
 import java.util.Date
 
 public class UserAgent {
@@ -29,7 +30,7 @@ public class UserAgent {
                 onComplete("Unknown")
             }
 
-            db.collection("roles")
+            db.collection("users")
                 .whereEqualTo("userid",userId)
                 .limit(1).get().addOnCompleteListener { task ->
                     if (task.isSuccessful) {
@@ -42,6 +43,32 @@ public class UserAgent {
                         onComplete(role)
                     }
             }
+        }
+
+        public fun getUsers(
+            onComplete: (List<User>?) -> Unit
+        ) {
+            val db = FirebaseHelper.getDb()
+            db.collection("users")
+                .get()
+                .addOnCompleteListener { task ->
+                    if (task.isSuccessful) {
+                        val users = task.result.documents.mapNotNull { document ->
+                            val data = document.data
+                            if (data != null) {
+                                val id = document.id
+                                val name = data["name"] as? String ?: ""
+                                val role = data["role"] as? String ?: ""
+                                User(id, name, role)
+                            } else {
+                                null
+                            }
+                        }
+                        onComplete(users)
+                    } else {
+                        onComplete(null)
+                    }
+                }
         }
     }
 }
