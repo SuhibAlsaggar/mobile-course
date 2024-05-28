@@ -1,32 +1,79 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="16dp"
-    android:id="@+id/main">
+    android:layout_height="match_parent">
 
-    <EditText
-        android:id="@+id/taskTitle"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Task Title" />
+        android:orientation="vertical"
+        android:padding="16dp"
+        android:background="@color/background_color">
 
-    <EditText
-        android:id="@+id/taskDescription"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Task Description" />
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Create New Task"
+            android:textSize="24sp"
+            android:textColor="@color/text_color_primary"
+            android:gravity="center"
+            android:layout_marginBottom="16dp" />
 
-    <EditText
-        android:id="@+id/taskAssignee"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Task Assignee" />
+        <EditText
+            android:id="@+id/taskTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Task Title"
+            android:layout_marginBottom="16dp"
+            android:padding="12dp"
+            android:background="@drawable/edit_text_background"
+            android:textColor="@color/text_color_primary"
+            android:textColorHint="@color/text_color_hint" />
 
-    <Button
-        android:id="@+id/createTaskButton"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Create Task" />
-</LinearLayout>
+        <EditText
+            android:id="@+id/taskDescription"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Task Description"
+            android:layout_marginBottom="16dp"
+            android:padding="12dp"
+            android:background="@drawable/edit_text_background"
+            android:textColor="@color/text_color_primary"
+            android:textColorHint="@color/text_color_hint" />
+
+        <Spinner
+            android:id="@+id/assigneeSpinner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:padding="12dp"
+            android:background="@drawable/spinner_background"
+            android:textColor="@color/text_color_primary" />
+
+        <Button
+            android:id="@+id/addSubtaskButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Add Subtask"
+            android:layout_marginBottom="16dp"
+            android:backgroundTint="@color/button_color"
+            android:textColor="@android:color/white" />
+
+        <LinearLayout
+            android:id="@+id/subtaskContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginBottom="16dp">
+            <!-- Subtask fields will be added here dynamically -->
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/createTaskButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Create Task"
+            android:backgroundTint="@color/button_color"
+            android:textColor="@android:color/white" />
+    </LinearLayout>
+</ScrollView>

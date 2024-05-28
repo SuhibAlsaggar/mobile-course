@@ -1,34 +1,27 @@
 package com.mobilecourse.taskproject
 
-import android.annotation.SuppressLint
 import android.os.Bundle
-import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import com.mobilecourse.taskproject.databinding.ActivityTaskDetailsBinding
+import com.mobilecourse.taskproject.datamodels.Task
+import com.mobilecourse.taskproject.firebaseservice.TasksAgent
 
 class TaskDetailsActivity : AppCompatActivity() {
-
-    private lateinit var taskTitle: TextView
-    private lateinit var taskDescription: TextView
-    private lateinit var taskAssignee: TextView
-    private lateinit var taskLocation: TextView
-
+    private lateinit var binding: ActivityTaskDetailsBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_task_details)
+        binding = ActivityTaskDetailsBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
-        taskTitle = findViewById(R.id.taskTitle)
-        taskDescription = findViewById(R.id.taskDescription)
-        taskAssignee = findViewById(R.id.taskAssignee)
-        taskLocation = findViewById(R.id.taskLocation)
+        val taskId = intent.getStringExtra("TASK_ID")!!
 
-        val task = intent.getParcelableExtra<TaskCreateActivity.Task>("TASK")
+        TasksAgent.getTaskById(taskId){
+            binding.taskTitle.text = it!!.title
+            binding.taskDescription.text = it.subtasks.joinToString(", ") { subTask -> subTask.description }
 
-        task?.let {
-            taskTitle.text = it.title
-            taskDescription.text = it.description
-            taskAssignee.text = it.assignee
-            taskLocation.text = "Lat: ${it.latitude}, Lon: ${it.longitude}"
+            binding.taskAssignee.text = it.assigneeId
+            binding.taskLocation.text = "Lat: ${it.latLng?.latitude}, Lon: ${it.latLng?.longitude}"
         }
     }
 }

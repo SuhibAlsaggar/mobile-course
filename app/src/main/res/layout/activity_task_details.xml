@@ -1,36 +1,116 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="16dp">
+    android:layout_height="match_parent">
 
-    <TextView
-        android:id="@+id/taskTitle"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Task Title"
-        android:textSize="24sp"
-        android:textStyle="bold" />
+        android:orientation="vertical"
+        android:padding="16dp"
+        android:background="@color/background_color">
 
-    <TextView
-        android:id="@+id/taskDescription"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Task Description"
-        android:textSize="18sp" />
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Task Details"
+            android:textSize="24sp"
+            android:textColor="@color/text_color_primary"
+            android:gravity="center"
+            android:layout_marginBottom="16dp" />
 
-    <TextView
-        android:id="@+id/taskAssignee"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Assignee"
-        android:textSize="18sp" />
+        <TextView
+            android:id="@+id/taskTitleLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Title"
+            android:textSize="18sp"
+            android:textColor="@color/text_color_primary"
+            android:layout_marginBottom="4dp" />
 
-    <TextView
-        android:id="@+id/taskLocation"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Location"
-        android:textSize="18sp" />
-</LinearLayout>
+        <TextView
+            android:id="@+id/taskTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:padding="12dp"
+            android:background="@drawable/text_view_background"
+            android:textColor="@color/text_color_primary" />
+
+        <TextView
+            android:id="@+id/taskDescriptionLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Description"
+            android:textSize="18sp"
+            android:textColor="@color/text_color_primary"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="4dp" />
+
+        <TextView
+            android:id="@+id/taskDescription"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:padding="12dp"
+            android:background="@drawable/text_view_background"
+            android:textColor="@color/text_color_primary" />
+
+        <TextView
+            android:id="@+id/taskAssigneeLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Assignee"
+            android:textSize="18sp"
+            android:textColor="@color/text_color_primary"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="4dp" />
+
+        <TextView
+            android:id="@+id/taskAssignee"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:padding="12dp"
+            android:background="@drawable/text_view_background"
+            android:textColor="@color/text_color_primary" />
+
+        <TextView
+            android:id="@+id/taskLocationLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Location"
+            android:textSize="18sp"
+            android:textColor="@color/text_color_primary"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="4dp" />
+
+        <TextView
+            android:id="@+id/taskLocation"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:padding="12dp"
+            android:background="@drawable/text_view_background"
+            android:textColor="@color/text_color_primary" />
+
+        <TextView
+            android:id="@+id/taskSubtasksLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Subtasks"
+            android:textSize="18sp"
+            android:textColor="@color/text_color_primary"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="4dp" />
+
+        <TextView
+            android:id="@+id/taskSubtasks"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:padding="12dp"
+            android:background="@drawable/text_view_background"
+            android:textColor="@color/text_color_primary" />
+    </LinearLayout>
+</ScrollView>

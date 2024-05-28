@@ -1,50 +1,109 @@
 package com.mobilecourse.taskproject
 
 import android.Manifest
-import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Location
 import android.os.Bundle
-import android.os.Parcel
-import android.os.Parcelable
 import android.util.Log
+import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.EditText
+import android.widget.LinearLayout
+import android.widget.Spinner
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.GeoPoint
+import com.mobilecourse.taskproject.datamodels.SubTask
+import com.mobilecourse.taskproject.datamodels.Task
+import com.mobilecourse.taskproject.databinding.ActivityTaskCreateBinding
+import com.mobilecourse.taskproject.firebaseservice.TasksAgent
 import java.util.Date
-
 
 class TaskCreateActivity : AppCompatActivity() {
 
-    private lateinit var taskTitle: EditText
-    private lateinit var taskDescription: EditText
-    private lateinit var taskAssignee: EditText
-    private lateinit var createTaskButton: Button
+    private lateinit var binding: ActivityTaskCreateBinding
     private lateinit var fusedLocationClient: FusedLocationProviderClient
-
+    private lateinit var subtaskContainer: LinearLayout
+    private lateinit var assigneeSpinner: Spinner
+    private lateinit var assigneesList: List<String>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_task_create)
-
-        taskTitle = findViewById(R.id.taskTitle)
-        taskDescription = findViewById(R.id.taskDescription)
-        taskAssignee = findViewById(R.id.taskAssignee)
-        createTaskButton = findViewById(R.id.createTaskButton)
+        binding = ActivityTaskCreateBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+        subtaskContainer = findViewById(R.id.subtaskContainer)
+        assigneeSpinner = findViewById(R.id.assigneeSpinner)
 
-        createTaskButton.setOnClickListener { createTask() }
+        binding.addSubtaskButton.setOnClickListener { addSubtaskField() }
+        binding.createTaskButton.setOnClickListener { createTask() }
+
+        // Fetch assignees from the database and populate the Spinner
+        fetchAssignees()
+    }
+
+    private fun addSubtaskField() {
+        if (subtaskContainer.childCount > 5) {
+            return
+        }
+
+        val subtaskLayout = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            )
+        }
+
+        val subtaskField = EditText(this).apply {
+            hint = "Subtask"
+            layoutParams = LinearLayout.LayoutParams(
+                0,
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                1f
+            )
+        }
+
+        val removeButton = Button(this).apply {
+            text = "Remove"
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            )
+            setOnClickListener {
+                subtaskContainer.removeView(subtaskLayout)
+            }
+        }
+
+        subtaskLayout.addView(subtaskField)
+        subtaskLayout.addView(removeButton)
+        subtaskContainer.addView(subtaskLayout)
+    }
+
+
+    private fun fetchAssignees() {
+        val db = FirebaseFirestore.getInstance()
+        db.collection("users").get().addOnSuccessListener { documents ->
+            assigneesList = documents.map { it.getString("name") ?: "" }
+            println("test ${documents.documents}")
+            val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, assigneesList)
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+            assigneeSpinner.adapter = adapter
+        }.addOnFailureListener { exception ->
+            Log.e("TaskCreateActivity", "Error fetching assignees", exception)
+            Toast.makeText(this, "Failed to fetch assignees", Toast.LENGTH_SHORT).show()
+        }
     }
 
     private fun createTask() {
-        val title = taskTitle.text.toString()
-        val description = taskDescription.text.toString()
-        val assignee = taskAssignee.text.toString()
+        val title = binding.taskTitle.text.toString()
+        val description = binding.taskDescription.text.toString()
+        val assignee = assigneeSpinner.selectedItem.toString()
         val date = Date()
 
         if (title.isEmpty() || description.isEmpty() || assignee.isEmpty()) {
@@ -67,15 +126,34 @@ class TaskCreateActivity : AppCompatActivity() {
 
         fusedLocationClient.lastLocation.addOnSuccessListener { location: Location? ->
             location?.let {
-                val task = Task(title, description, date, assignee, it.latitude, it.longitude)
+                val latLng = GeoPoint(it.latitude, it.longitude)
 
-
-                Log.d("TaskCreateActivity", "Task created successfully: $task")
-                val intent = Intent(this, TaskDetailsActivity::class.java).apply {
-                    putExtra("TASK", task)
+                // Collect subtasks
+                val subtasks = mutableListOf<SubTask>()
+                for (i in 0 until subtaskContainer.childCount) {
+                    val subtaskField = subtaskContainer.getChildAt(i) as EditText
+                    val subtaskDescription = subtaskField.text.toString()
+                    if (subtaskDescription.isNotEmpty()) {
+                        subtasks.add(SubTask(description = subtaskDescription, completed = false))
+                    }
                 }
-                startActivity(intent)
-                finish()
+
+                // Use TasksAgent to create the task and upload to Firestore
+                TasksAgent.createTask(
+                    title = title,
+                    latLng = latLng,
+                    assigneeId = assignee,
+                    subtasks = subtasks
+                ) { success ->
+                    if (success) {
+                        Log.d("TaskCreateActivity", "Task created successfully")
+                        Toast.makeText(this, "Task created successfully", Toast.LENGTH_SHORT).show()
+                        finish() // Close the activity
+                    } else {
+                        Log.e("TaskCreateActivity", "Error creating task")
+                        Toast.makeText(this, "Failed to create task", Toast.LENGTH_LONG).show()
+                    }
+                }
             } ?: run {
                 Log.e("TaskCreateActivity", "Location is null")
                 Toast.makeText(this, "Unable to get location", Toast.LENGTH_SHORT).show()
@@ -87,7 +165,7 @@ class TaskCreateActivity : AppCompatActivity() {
         }
     }
 
-        override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == 1) {
             if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
@@ -97,44 +175,4 @@ class TaskCreateActivity : AppCompatActivity() {
             }
         }
     }
-
-    data class Task(
-        val title: String,
-        val description: String,
-        val date: Date,
-        val assignee: String,
-        val latitude: Double,
-        val longitude: Double
-    ) : Parcelable {
-        constructor() : this("", "", Date(), "", 0.0, 0.0)
-
-        companion object {
-            @JvmField
-            val CREATOR = object : Parcelable.Creator<Task> {
-                override fun createFromParcel(parcel: Parcel) = Task(parcel)
-                override fun newArray(size: Int) = arrayOfNulls<Task>(size)
-            }
-        }
-
-        private constructor(parcel: Parcel) : this(
-            parcel.readString() ?: "",
-            parcel.readString() ?: "",
-            Date(parcel.readLong()),
-            parcel.readString() ?: "",
-            parcel.readDouble(),
-            parcel.readDouble()
-        )
-
-        override fun writeToParcel(parcel: Parcel, flags: Int) {
-            parcel.writeString(title)
-            parcel.writeString(description)
-            parcel.writeLong(date.time)
-            parcel.writeString(assignee)
-            parcel.writeDouble(latitude)
-            parcel.writeDouble(longitude)
-        }
-
-        override fun describeContents() = 0
-    }
-
 }

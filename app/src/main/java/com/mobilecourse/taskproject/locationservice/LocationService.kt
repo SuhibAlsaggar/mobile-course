@@ -10,6 +10,7 @@ import androidx.core.app.NotificationCompat
 import com.google.android.gms.location.LocationServices
 import com.mobilecourse.taskproject.HomeActivity
 import com.mobilecourse.taskproject.R
+import com.mobilecourse.taskproject.TaskDetailsActivity
 import com.mobilecourse.taskproject.firebaseservice.TasksAgent
 import com.mobilecourse.taskproject.datamodels.Task
 import com.mobilecourse.taskproject.locationservice.LocationHelper.Companion.haversine
@@ -107,7 +108,7 @@ class LocationService : Service() {
         if (shownTaskIds.contains(taskId))
             return
 
-        val taskIntent = Intent(this, HomeActivity::class.java)
+        val taskIntent = Intent(this, TaskDetailsActivity::class.java)
         taskIntent.putExtra("TASK_ID", taskId)
         taskIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         val taskPendingIntent =
