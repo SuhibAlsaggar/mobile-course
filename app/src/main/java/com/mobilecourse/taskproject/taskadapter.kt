@@ -1,73 +1,67 @@
-import android.location.Geocoder
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
-import android.widget.ImageView
-import android.widget.TextView
-import androidx.recyclerview.widget.RecyclerView
-import com.mobilecourse.taskproject.R
-import com.mobilecourse.taskproject.datamodels.Task
+package com.mobilecourse.taskproject
 
+import android.location.Geocoder
+import android.os.Handler
+import android.os.Looper
+import android.view.LayoutInflater
+import android.view.ViewGroup
+import androidx.recyclerview.widget.RecyclerView
+import com.mobilecourse.taskproject.databinding.RecyclerviewdesignBinding
+import com.mobilecourse.taskproject.datamodels.Task
 import java.io.IOException
 import java.util.Locale
 
-class taskAdapter(
-    private val data: List<Task>,
+class TaskAdapter(
+    private val data: MutableList<Task>,
     private val onItemClickListener: (Task, Int) -> Unit
-) : RecyclerView.Adapter<taskAdapter.MyViewHolder>() {
+) : RecyclerView.Adapter<TaskAdapter.TaskViewHolder>() {
 
-    private lateinit var geocoder: Geocoder
+    private var geocoder: Geocoder? = null
+    private val mainHandler = Handler(Looper.getMainLooper())
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.fragment_taskscroolfragment, parent, false)
-        geocoder = Geocoder(parent.context, Locale.getDefault())
-        return MyViewHolder(view)
+    inner class TaskViewHolder(private val binding: RecyclerviewdesignBinding) : RecyclerView.ViewHolder(binding.root) {
+        fun bind(task: Task, position: Int) {
+            binding.textName.text = task.title
+            binding.textDate.text = task.date!!.toDate().toString()
+
+            // Reverse geocode on a separate thread
+            Thread {
+                try {
+                    val addresses = geocoder?.getFromLocation(task.latLng!!.latitude, task.latLng.longitude, 1)
+                    if (addresses != null && addresses.isNotEmpty()) {
+                        val address = addresses[0].getAddressLine(0)
+                        // Update UI on main thread
+                        mainHandler.post {
+                            binding.textAddress.text = address
+                        }
+                    }
+                } catch (e: IOException) {
+                    e.printStackTrace()
+                }
+            }.start()
+
+            val subTasks = task.subtasks
+
+            binding.imageCheckbox.setImageResource(
+                if (subTasks.all { it.completed == true }) R.drawable.ic_checkbox_checked else R.drawable.ic_checkbox_unchecked
+            )
+
+            binding.root.setOnClickListener {
+                onItemClickListener(task, position)
+                println("item clicked")
+            }
+        }
     }
 
-    override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
-        val item = data[position]
-        holder.textName.text = item.title
-        holder.textDate.text = item.date!!.toDate().toString()
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TaskViewHolder {
+        val binding = RecyclerviewdesignBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        geocoder = Geocoder(parent.context, Locale.getDefault())
+        return TaskViewHolder(binding)
+    }
 
-        reverseGeocode(item.latLng!!.latitude, item.latLng.longitude) { address ->
-                holder.textAddress.text = address
-            }
-
-        holder.imageCheckbox.setImageResource(
-            if (item.subtasks.all { subTask -> subTask.completed!! }) R.drawable.ic_checkbox_checked else R.drawable.ic_checkbox_unchecked
-        )
-
-        holder.itemView.setOnClickListener {
-            onItemClickListener(item, position)
-        }
-
+    override fun onBindViewHolder(holder: TaskViewHolder, position: Int) {
+        holder.bind(data[position], position)
     }
 
     override fun getItemCount(): Int = data.size
-
-    private fun updateFirebase(item: taskdata, position: Int) {
-        // Implement Firebase update logic based on item.isChecked
-    }
-
-    private fun reverseGeocode(latitude: Double, longitude: Double, callback: (String) -> Unit) {
-        // Perform geocoding in a background thread to avoid blocking the UI thread
-        Thread {
-            try {
-                val addresses = geocoder.getFromLocation(latitude, longitude, 1)
-                if (addresses != null && addresses.isNotEmpty()) {
-                    val address = addresses[0].getAddressLine(0)
-                    callback(address)
-                }
-            } catch (e: IOException) {
-                e.printStackTrace()
-            }
-        }.start()
-    }
-
-    class MyViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        val textName: TextView = view.findViewById(R.id.text_name)
-        val textAddress: TextView = view.findViewById(R.id.text_address)
-        val textDate: TextView = view.findViewById(R.id.text_date)
-        val imageCheckbox: ImageView = view.findViewById(R.id.image_checkbox)
-    }
 }

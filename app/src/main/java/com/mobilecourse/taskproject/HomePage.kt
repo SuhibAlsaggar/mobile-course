@@ -3,29 +3,20 @@ package com.mobilecourse.taskproject
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
-import android.widget.Button
-import android.widget.ImageButton
-import android.widget.TextView
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.mobilecourse.taskproject.databinding.ActivityHomePageBinding
-import com.mobilecourse.taskproject.databinding.ActivityMainBinding
 import com.mobilecourse.taskproject.datamodels.Task
 import com.mobilecourse.taskproject.firebaseservice.TasksAgent
-import taskAdapter
-import taskdata
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 
 class HomePage : AppCompatActivity() {
 
-
     private lateinit var binding: ActivityHomePageBinding
-
     private var currentDate = Date()
     private val format = SimpleDateFormat("dd/MM/yyyy")
 
@@ -33,8 +24,7 @@ class HomePage : AppCompatActivity() {
     private val firestore: FirebaseFirestore by lazy { FirebaseFirestore.getInstance() }
 
     private lateinit var taskList: MutableList<Task>
-    private lateinit var adapter: taskAdapter
-
+    private lateinit var adapter: TaskAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -43,18 +33,19 @@ class HomePage : AppCompatActivity() {
         setContentView(binding.root)
 
         taskList = mutableListOf()
-        adapter = taskAdapter(taskList) { item, position ->
-            // Handle item click here if needed
+        adapter = TaskAdapter(taskList) { item, position ->
+            // Handle item click here
+            println("Clicked task at position $position: ${item.title}")
         }
+
+        binding.recyclerViewTasks.layoutManager = LinearLayoutManager(this)
+        binding.recyclerViewTasks.adapter = adapter
 
         updateDateTextView()
         fetchUserRole()
 
-        binding.buttonNext.setOnClickListener {
-            val intent = Intent(
-                this,
-                testactivity::class.java
-            )
+        binding.newTask.setOnClickListener {
+            val intent = Intent(this, testactivity::class.java)
             startActivity(intent)
         }
 
@@ -66,7 +57,7 @@ class HomePage : AppCompatActivity() {
             updateDate(1)
         }
 
-        replaceFragment(taskscroolfragment())
+        loadTasksForDate(currentDate)
     }
 
     private fun fetchUserRole() {
@@ -78,9 +69,9 @@ class HomePage : AppCompatActivity() {
                     if (document != null) {
                         val role = document.getString("role")
                         if (role == "admin") {
-                            binding.buttonNext.visibility = View.VISIBLE
+                            binding.newTask.visibility = View.VISIBLE
                         } else {
-                            binding.buttonNext.visibility = View.GONE
+                            binding.newTask.visibility = View.GONE
                         }
                     }
                 }
@@ -98,24 +89,18 @@ class HomePage : AppCompatActivity() {
         updateDateTextView()
         loadTasksForDate(currentDate)
     }
+
     private fun updateDateTextView() {
         val formattedDate = format.format(currentDate)
         binding.xmlDateTimeTextView.text = formattedDate
     }
 
     private fun loadTasksForDate(date: Date) {
-        TasksAgent.getTasksForDate(date, null){ tasks ->
-            tasks.forEach{
-                taskList.add(it)
-                adapter.notifyDataSetChanged()
-            }
+        TasksAgent.getTasksForDate(date, null) { tasks ->
+            taskList.clear()
+            taskList.addAll(tasks)
+            adapter.notifyDataSetChanged()
+            println("Loaded tasks: $tasks")
         }
-    }
-
-    private fun replaceFragment(fragment: Fragment) {
-        val fragmentManager = supportFragmentManager
-        val fragmentTransaction = fragmentManager.beginTransaction()
-        fragmentTransaction.replace(R.id.framelayout, fragment)
-        fragmentTransaction.commit()
     }
 }
