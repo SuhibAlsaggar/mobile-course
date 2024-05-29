@@ -5,8 +5,14 @@ import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.GeoPoint
 import com.mobilecourse.taskproject.datamodels.SubTask
 import com.mobilecourse.taskproject.datamodels.Task
+import com.mobilecourse.taskproject.firebaseservice.UserAgent.Companion.getUserById
 import java.util.Calendar
 import java.util.Date
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withContext
 
 public class TasksAgent {
 
@@ -24,31 +30,33 @@ public class TasksAgent {
             userId: String? = null,
             onTasksRetrieved: (List<Task>) -> Unit
         ) {
-            val db = FirebaseHelper.getDb()
-            val calendar = Calendar.getInstance()
+            GlobalScope.launch(Dispatchers.Main) {
+                val db = FirebaseHelper.getDb()
+                val calendar = Calendar.getInstance()
 
-            calendar.time = selectedDate
-            calendar.set(Calendar.HOUR_OF_DAY, 0)
-            calendar.set(Calendar.MINUTE, 0)
-            calendar.set(Calendar.SECOND, 0)
-            calendar.set(Calendar.MILLISECOND, 0)
-            val startOfDay = calendar.time
+                calendar.time = selectedDate
+                calendar.set(Calendar.HOUR_OF_DAY, 0)
+                calendar.set(Calendar.MINUTE, 0)
+                calendar.set(Calendar.SECOND, 0)
+                calendar.set(Calendar.MILLISECOND, 0)
+                val startOfDay = calendar.time
 
-            calendar.add(Calendar.DAY_OF_MONTH, 1)
-            val endOfDay = calendar.time
+                calendar.add(Calendar.DAY_OF_MONTH, 1)
+                val endOfDay = calendar.time
 
-            var query = db.collection("tasks")
-                .whereGreaterThanOrEqualTo("date", startOfDay)
-                .whereLessThan("date", endOfDay)
+                var query = db.collection("tasks")
+                    .whereGreaterThanOrEqualTo("date", startOfDay)
+                    .whereLessThan("date", endOfDay)
 
-            if (userId != null) {
-                query = query.whereEqualTo("assigneeId", userId)
-            }
+                if (userId != null) {
+                    query = query.whereEqualTo("assigneeId", userId)
+                }
 
-            query.get().addOnCompleteListener { task ->
-                if (task.isSuccessful) {
+                try {
+                    val taskSnapshots = query.get().await()
                     val tasks = mutableListOf<Task>()
-                    for (document in task.result!!) {
+
+                    for (document in taskSnapshots) {
                         val data = document.data
                         val subtasks = (data["subtasks"] as List<HashMap<String, Any>>).map {
                             SubTask(
@@ -56,9 +64,15 @@ public class TasksAgent {
                                 completed = it["completed"] as Boolean
                             )
                         }
+
+                        val assigneeId = data["assigneeId"] as? String ?: ""
+                        val user = withContext(Dispatchers.IO) {
+                            getUserById(assigneeId)
+                        }
+
                         val taskItem = Task(
                             id = document.id,
-                            assigneeId = data["assigneeId"] as? String ?: "",
+                            assigneeId = user.name,
                             title = data["title"] as? String ?: "",
                             date = data["date"] as? Timestamp,
                             latLng = data["latLng"] as? GeoPoint,
@@ -67,6 +81,8 @@ public class TasksAgent {
                         tasks.add(taskItem)
                     }
                     onTasksRetrieved(tasks)
+                } catch (e: Exception) {
+                    e.printStackTrace()
                 }
             }
         }
@@ -75,22 +91,29 @@ public class TasksAgent {
             taskId: String,
             onTaskRetrieved: (Task?) -> Unit
         ) {
-            val db = FirebaseHelper.getDb()
-            val docRef = db.collection("tasks").document(taskId)
-            docRef.get().addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    val document = task.result
-                    if (document?.exists() == true) {
-                        val data = document.data ?: return@addOnCompleteListener
+            GlobalScope.launch(Dispatchers.Main) {
+                val db = FirebaseHelper.getDb()
+                val docRef = db.collection("tasks").document(taskId)
+
+                try {
+                    val document = docRef.get().await()
+                    if (document.exists()) {
+                        val data = document.data ?: return@launch onTaskRetrieved(null)
                         val subtasks = (data["subtasks"] as List<HashMap<String, Any>>).map {
                             SubTask(
                                 description = it["description"] as String,
                                 completed = it["completed"] as Boolean
                             )
                         }
+
+                        val assigneeId = data["assigneeId"] as? String ?: ""
+                        val user = withContext(Dispatchers.IO) {
+                            getUserById(assigneeId)
+                        }
+
                         val retrievedTask = Task(
                             id = document.id,
-                            assigneeId = data["assigneeId"] as? String ?: "",
+                            assigneeId = user.name,
                             title = data["title"] as? String ?: "",
                             date = data["date"] as? Timestamp,
                             latLng = data["latLng"] as? GeoPoint,
@@ -100,6 +123,9 @@ public class TasksAgent {
                     } else {
                         onTaskRetrieved(null)
                     }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    onTaskRetrieved(null)
                 }
             }
         }

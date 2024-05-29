@@ -1,11 +1,8 @@
 package com.mobilecourse.taskproject.firebaseservice
 
-import com.google.firebase.Timestamp
-import com.google.firebase.firestore.GeoPoint
-import com.mobilecourse.taskproject.datamodels.SubTask
-import com.mobilecourse.taskproject.datamodels.Task
 import com.mobilecourse.taskproject.datamodels.User
-import java.util.Date
+import kotlinx.coroutines.tasks.await
+
 
 public class UserAgent {
 
@@ -42,6 +39,31 @@ public class UserAgent {
                         val role = data!!["role"] as? String ?: ""
                         onComplete(role)
                     }
+            }
+        }
+
+
+        suspend fun getUserById(userId: String): User {
+            val db = FirebaseHelper.getDb()
+            val querySnapshot = db.collection("users")
+                .whereEqualTo("userid", userId)
+                .limit(1)
+                .get()
+                .await()
+
+            return if (querySnapshot.documents.isNotEmpty()) {
+                val document = querySnapshot.documents.first()
+                val data = document.data
+                if (data != null) {
+                    val id = document.id
+                    val name = data["name"] as? String ?: ""
+                    val role = data["role"] as? String ?: ""
+                    User(id, name, role)
+                } else {
+                    User("Unknown", "Unknown", "Unknown")
+                }
+            } else {
+                User("Unknown", "Unknown", "Unknown")
             }
         }
 
