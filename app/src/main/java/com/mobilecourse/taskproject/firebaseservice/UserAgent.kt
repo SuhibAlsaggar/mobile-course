@@ -20,7 +20,7 @@ public class UserAgent {
                 .whereEqualTo("userid", userId)
                 .limit(1).get().addOnCompleteListener { task ->
                     if (task.isSuccessful) {
-                        val data = task.result.documents[0]
+                        val data = task.result.documents.first()
                         if (data == null) {
                             onComplete("Unknown")
                         }

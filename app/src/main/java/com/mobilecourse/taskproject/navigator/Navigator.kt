@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.mobilecourse.taskproject.AnalyticsActivity
 import com.mobilecourse.taskproject.AuthActivity
 import com.mobilecourse.taskproject.HomePageActivity
 import com.mobilecourse.taskproject.MapActivity
@@ -19,6 +20,14 @@ class Navigator {
                 return
 
             val intent = Intent(context, HomePageActivity::class.java)
+            context.startActivity(intent)
+        }
+
+        fun toAnalytics(context: Context) {
+            if (context::class.java == AnalyticsActivity::class.java)
+                return
+
+            val intent = Intent(context, AnalyticsActivity::class.java)
             context.startActivity(intent)
         }
 
@@ -66,8 +75,8 @@ class Navigator {
                 MapActivity::class.java -> bottomNavigationView.selectedItemId = R.id.navigation_map
                 HomePageActivity::class.java -> bottomNavigationView.selectedItemId =
                     R.id.navigation_home
-//                AnalyticsActivity::class.java -> bottomNavigationView.selectedItemId =
-//                    R.id.navigation_analytics
+                AnalyticsActivity::class.java -> bottomNavigationView.selectedItemId =
+                    R.id.navigation_analytics
                 else -> bottomNavigationView.selectedItemId = R.id.navigation_home
             }
 
@@ -80,8 +89,7 @@ class Navigator {
 
             bottomNavigationMenu.findItem(R.id.navigation_analytics)
                 .setOnMenuItemClickListener {
-                    // Change to analytics
-                    toHomePage(activity)
+                    toAnalytics(activity)
                     return@setOnMenuItemClickListener true
                 }
 
