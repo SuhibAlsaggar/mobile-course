@@ -26,8 +26,6 @@ class MainActivity : AppCompatActivity() {
 
         requestPermissions()
         binding = ActivityMainBinding.inflate(layoutInflater)
-        setContentView(binding.root)
-        updatePermissionsText()
         binding.requestPermissionsButton.setOnClickListener {
             requestPermissions()
         }
@@ -76,5 +74,7 @@ class MainActivity : AppCompatActivity() {
 
         binding.notificationPermissionsText.text = if (!hasNotificationsPermission())
             "Notification permissions are NOT granted." else "Notification permissions are granted."
+
+        setContentView(binding.root)
     }
 }

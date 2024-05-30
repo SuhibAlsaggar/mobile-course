@@ -37,7 +37,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnInfoWin
 
         val calendar = Calendar.getInstance()
 
-        TasksAgent.getTasksForDate(calendar.time, null) { tasks ->
+        TasksAgent.getUserTasksForDate(calendar.time) { tasks ->
             tasks.forEach { task ->
                 val latLng = LatLng(task.latLng!!.latitude, task.latLng.longitude)
                 val title = task.title

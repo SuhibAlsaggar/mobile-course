@@ -12,6 +12,7 @@
         app:cardElevation="4dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginBottom="16dp"
         tools:ignore="MissingConstraints">
 
         <LinearLayout
@@ -19,6 +20,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:clickable="true"
+            android:focusable="true"
             android:orientation="vertical"
             android:padding="16dp">
 

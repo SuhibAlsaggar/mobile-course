@@ -2,12 +2,8 @@ package com.mobilecourse.taskproject.adapters
 
 import android.content.Context
 import android.location.Geocoder
-import android.os.Handler
-import android.os.Looper
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
 import com.mobilecourse.taskproject.R
 import com.mobilecourse.taskproject.databinding.RecyclerHomeTaskCardBinding
@@ -29,7 +25,7 @@ class TaskAdapter(
     inner class TaskViewHolder(private val binding: RecyclerHomeTaskCardBinding) :
         RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(task: Task, position: Int) {
+        fun bind(task: Task) {
             binding.textName.text = task.title
             binding.textDate.text = task.date!!.toDate().toString()
 
@@ -67,7 +63,7 @@ class TaskAdapter(
     }
 
     override fun onBindViewHolder(holder: TaskViewHolder, position: Int) {
-        holder.bind(data[position], position)
+        holder.bind(data[position])
     }
 
     override fun getItemCount(): Int = data.size

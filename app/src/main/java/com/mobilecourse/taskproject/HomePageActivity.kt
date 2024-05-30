@@ -25,10 +25,10 @@ class HomePageActivity : AppCompatActivity() {
     private lateinit var binding: ActivityHomePageBinding
     private var currentDate = Date()
     private val format = SimpleDateFormat("dd/MM/yyyy")
+    private var role: String = "user"
 
     private lateinit var taskList: MutableList<Task>
     private lateinit var adapter: TaskAdapter
-    private lateinit var role: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
