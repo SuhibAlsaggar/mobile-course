@@ -10,6 +10,7 @@ public class FirebaseHelper {
         fun getDb(): FirebaseFirestore {
             return FirebaseFirestore.getInstance()
         }
+
         fun getAuth(): FirebaseAuth {
             return FirebaseAuth.getInstance()
         }

@@ -8,16 +8,13 @@ import android.content.Intent
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import com.google.android.gms.location.LocationServices
-import com.mobilecourse.taskproject.HomeActivity
+import com.mobilecourse.taskproject.MainActivity
 import com.mobilecourse.taskproject.R
 import com.mobilecourse.taskproject.TaskDetailsActivity
 import com.mobilecourse.taskproject.firebaseservice.TasksAgent
 import com.mobilecourse.taskproject.datamodels.Task
 import com.mobilecourse.taskproject.locationservice.LocationHelper.Companion.haversine
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -29,6 +26,7 @@ class LocationService : Service() {
 
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private lateinit var locationClient: LocationClient
+    private var fetchJob: Job? = null
 
     companion object {
         const val ACTION_START = "ACTION_START"
@@ -56,6 +54,7 @@ class LocationService : Service() {
     }
 
     private fun stop() {
+        fetchJob?.cancel()
         stopForeground(true)
         stopSelf()
     }
@@ -67,20 +66,30 @@ class LocationService : Service() {
 
     // -------------------------------------------------------------------------------------------
 
-    private val TasksList = mutableListOf<Task>()
+    private val tasksList = mutableListOf<Task>()
     private fun start() {
-        val date = Date()
-        TasksAgent.getUserTasksForDate(date) { tasks ->
-            tasks.forEach { task ->
-                TasksList.add(task)
-            }
-        }
+        val intent = Intent(this, MainActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        val pendingIntent = PendingIntent.getActivity(
+            this,
+            0,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
 
-        val notificationId = SimpleDateFormat("ddHHmmss", Locale.US).format(date).toInt()
+        val notificationId = SimpleDateFormat("ddHHmmss", Locale.US).format(Date()).toInt()
         val notification = NotificationCompat.Builder(this, "locationService")
             .setContentTitle("Tracking location...")
             .setSmallIcon(R.drawable.ic_launcher_foreground)
             .setPriority(NotificationCompat.PRIORITY_MIN)
+            .setContentIntent(pendingIntent)
+
+        fetchJob = serviceScope.launch {
+            while (isActive) {
+                fetchTasks()
+                delay(5 * 60 * 1000)
+            }
+        }
 
         locationClient.getLocationUpdates(7000L)
             .catch { e -> e.printStackTrace() }
@@ -88,7 +97,7 @@ class LocationService : Service() {
                 val lat = location.latitude
                 val lng = location.longitude
 
-                TasksList.forEach { task ->
+                tasksList.forEach { task ->
                     val distance =
                         haversine(lat, lng, task.latLng!!.latitude, task.latLng.longitude)
                     checkDistanceForNotificationReset(distance, task.id)
@@ -102,22 +111,34 @@ class LocationService : Service() {
         startForeground(notificationId, notification.build())
     }
 
+    private fun fetchTasks() {
+        val date = Date()
+        TasksAgent.getUserIncompleteTasksForDate(date) { tasks ->
+            tasksList.clear()
+            tasksList.addAll(tasks)
+        }
+    }
+
     private val shownTaskIds = mutableListOf<String>()
     private fun showTaskNotification(distance: Double, taskId: String) {
-
         if (shownTaskIds.contains(taskId))
             return
 
         val taskIntent = Intent(this, TaskDetailsActivity::class.java)
         taskIntent.putExtra("TASK_ID", taskId)
         taskIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-        val taskPendingIntent =
-            PendingIntent.getActivity(this, 1, taskIntent, PendingIntent.FLAG_IMMUTABLE)
 
-        val notificationId = SimpleDateFormat("ddHHmmss", Locale.US).format(Date()).toInt()
+        val uniqueRequestCode = taskId.hashCode()
+        val taskPendingIntent = PendingIntent.getActivity(
+            this,
+            uniqueRequestCode,
+            taskIntent,
+            PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_IMMUTABLE
+        )
+
         val notification = NotificationCompat.Builder(this, "taskService")
             .setContentTitle("Task nearby")
-            .setContentTitle("You're ${distance.toInt()}m away from your task")
+            .setContentText("You're ${distance.toInt()}m away from your task")
             .setSmallIcon(R.drawable.ic_launcher_foreground)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setAutoCancel(true)
@@ -125,9 +146,8 @@ class LocationService : Service() {
 
         val notificationManager =
             getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        notificationManager.notify(notificationId, notification.build())
+        notificationManager.notify(uniqueRequestCode, notification.build())
         shownTaskIds.add(taskId)
-
     }
 
     private fun checkDistanceForNotificationReset(distance: Double, taskId: String) {

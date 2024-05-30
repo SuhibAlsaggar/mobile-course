@@ -21,7 +21,7 @@
         android:theme="@style/Theme.TaskProject"
         tools:targetApi="31">
         <activity
-            android:name=".HomePage"
+            android:name=".HomePageActivity"
             android:exported="false" />
         <activity
             android:name=".TaskDetailsActivity"
@@ -33,7 +33,7 @@
             android:name=".testactivity"
             android:exported="false" />
         <activity
-            android:name=".signup_login_page"
+            android:name=".AuthActivity"
             android:exported="false" />
         <activity
             android:name=".MapActivity"
@@ -61,7 +61,7 @@
             android:value="@integer/google_play_services_version" />
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="" />
+            android:value="AIzaSyBKP-SHl6VAkbxG6MKmwDGLktHNaHtTqDQ" />
     </application>
 
 </manifest>

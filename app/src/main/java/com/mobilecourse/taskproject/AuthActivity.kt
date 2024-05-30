@@ -8,14 +8,15 @@ import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.google.firebase.auth.FirebaseAuth
+import com.mobilecourse.taskproject.firebaseservice.UserAgent
 
 
-class signup_login_page :AppCompatActivity() {
+class AuthActivity : AppCompatActivity() {
     private lateinit var auth: FirebaseAuth
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_signup_login_page)
+        setContentView(R.layout.activity_auth)
 
         auth = FirebaseAuth.getInstance()
 
@@ -35,12 +36,12 @@ class signup_login_page :AppCompatActivity() {
             val email = emailField.text.toString()
             val password = passwordField.text.toString()
 
-            auth.signInWithEmailAndPassword(email, password).addOnCompleteListener(this) { task ->
-                if (task.isSuccessful) {
-                    val intent = Intent(this, HomePage::class.java)
+            UserAgent.signIn(email, password) { success, message ->
+                if (success) {
+                    val intent = Intent(this, HomePageActivity::class.java)
                     startActivity(intent)
                 } else {
-                    Toast.makeText(this, "Sign-in failed", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
                 }
             }
         }
@@ -49,16 +50,15 @@ class signup_login_page :AppCompatActivity() {
             val email = emailField.text.toString()
             val password = passwordField.text.toString()
 
-            auth.createUserWithEmailAndPassword(email, password)
-                .addOnCompleteListener(this) { task ->
-                    if (task.isSuccessful) {
-                        Toast.makeText(this, "Sign-up successful", Toast.LENGTH_SHORT).show()
-                        val intent = Intent(this, HomePage::class.java)
-                        startActivity(intent)
-                    } else {
-                        Toast.makeText(this, "Sign-up failed", Toast.LENGTH_SHORT).show()
-                    }
+            UserAgent.signUp(email, password) { success, message ->
+                if (success) {
+                    Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+                    val intent = Intent(this, HomePageActivity::class.java)
+                    startActivity(intent)
+                } else {
+                    Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
                 }
+            }
         }
     }
 }
