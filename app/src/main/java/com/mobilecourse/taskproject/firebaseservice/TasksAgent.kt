@@ -1,3 +1,5 @@
+@file:OptIn(DelicateCoroutinesApi::class)
+
 package com.mobilecourse.taskproject.firebaseservice
 
 import com.google.firebase.Timestamp
@@ -6,6 +8,7 @@ import com.google.firebase.firestore.GeoPoint
 import com.mobilecourse.taskproject.datamodels.SubTask
 import com.mobilecourse.taskproject.datamodels.Task
 import com.mobilecourse.taskproject.firebaseservice.UserAgent.Companion.getUserById
+import kotlinx.coroutines.DelicateCoroutinesApi
 import java.util.Calendar
 import java.util.Date
 import kotlinx.coroutines.Dispatchers
@@ -22,12 +25,21 @@ public class TasksAgent {
             onTasksRetrieved: (List<Task>) -> Unit
         ) {
             val userID = FirebaseHelper.getUserId()
-            getTasksForDate(selectedDate, userID, onTasksRetrieved)
+            getTasksForDate(selectedDate, userID, false, onTasksRetrieved)
+        }
+
+        public fun getUserIncompleteTasksForDate(
+            selectedDate: Date,
+            onTasksRetrieved: (List<Task>) -> Unit
+        ) {
+            val userID = FirebaseHelper.getUserId()
+            getTasksForDate(selectedDate, userID, true, onTasksRetrieved)
         }
 
         public fun getTasksForDate(
             selectedDate: Date,
             userId: String? = null,
+            onlyIncomplete: Boolean = false,
             onTasksRetrieved: (List<Task>) -> Unit
         ) {
             GlobalScope.launch(Dispatchers.Main) {
@@ -52,6 +64,10 @@ public class TasksAgent {
                     query = query.whereEqualTo("assigneeId", userId)
                 }
 
+                if (onlyIncomplete) {
+                    query = query.whereEqualTo("assigneeId", userId)
+                }
+
                 try {
                     val taskSnapshots = query.get().await()
                     val tasks = mutableListOf<Task>()
@@ -70,15 +86,18 @@ public class TasksAgent {
                             getUserById(assigneeId)
                         }
 
-                        val taskItem = Task(
-                            id = document.id,
-                            assigneeId = user.name,
-                            title = data["title"] as? String ?: "",
-                            date = data["date"] as? Timestamp,
-                            latLng = data["latLng"] as? GeoPoint,
-                            subtasks = subtasks
-                        )
-                        tasks.add(taskItem)
+                        if (!onlyIncomplete || subtasks.any { task -> !task.completed!! }) {
+                            tasks.add(
+                                Task(
+                                    id = document.id,
+                                    assigneeId = user.name,
+                                    title = data["title"] as? String ?: "",
+                                    date = data["date"] as? Timestamp,
+                                    latLng = data["latLng"] as? GeoPoint,
+                                    subtasks = subtasks
+                                )
+                            )
+                        }
                     }
                     onTasksRetrieved(tasks)
                 } catch (e: Exception) {
@@ -153,20 +172,28 @@ public class TasksAgent {
                 }
         }
 
-        public fun updateTaskSubtasks(
-            taskId: String,
-            updatedSubtasks: List<SubTask>,
-            onComplete: (Boolean) -> Unit
-        ) {
+        fun markTask(taskId: String, complete: Boolean = true, onComplete: (Boolean) -> Unit) {
             val db = FirebaseHelper.getDb()
-
             val docRef = db.collection("tasks").document(taskId)
-            docRef.update("subtasks", updatedSubtasks)
-                .addOnSuccessListener {
-                    onComplete(true)
+
+            docRef.get()
+                .addOnSuccessListener { documentSnapshot ->
+                    if (documentSnapshot.exists()) {
+                        val subtasks =
+                            (documentSnapshot.data!!["subtasks"] as List<HashMap<String, Any>>).map {
+                                SubTask(
+                                    description = it["description"] as String,
+                                    completed = complete
+                                )
+                            }
+                        docRef.update("subtasks", subtasks)
+                            .addOnSuccessListener {
+                                onComplete(true)
+                            }
+                    } else {
+                        onComplete(false)
+                    }
                 }
         }
     }
-
-
 }

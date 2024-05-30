@@ -1,6 +1,5 @@
 package com.mobilecourse.taskproject
 
-import com.mobilecourse.taskproject.locationservice.LocationService
 import com.mobilecourse.taskproject.locationservice.hasLocationPermission
 import android.Manifest
 import android.annotation.SuppressLint
@@ -14,6 +13,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import com.mobilecourse.taskproject.databinding.ActivityMainBinding
+import com.mobilecourse.taskproject.locationservice.hasNotificationsPermission
 
 class MainActivity : AppCompatActivity() {
     private lateinit var auth: FirebaseAuth
@@ -24,6 +24,17 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        requestPermissions()
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+        updatePermissionsText()
+        binding.requestPermissionsButton.setOnClickListener {
+            requestPermissions()
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    private fun requestPermissions() {
         ActivityCompat.requestPermissions(
             this,
             arrayOf(
@@ -33,31 +44,37 @@ class MainActivity : AppCompatActivity() {
             ),
             0
         )
-
-        binding = ActivityMainBinding.inflate(layoutInflater)
-
-        if (hasLocationPermission()) {
-            Intent(applicationContext, LocationService::class.java).apply {
-                action = LocationService.ACTION_START
-                startService(this)
-                binding.Text.text = "Location permissions granted"
-            }
-        } else {
-            binding.Text.text = "Location permissions NOT granted"
-        }
-
-
-
-        var intent = Intent(this, signup_login_page::class.java)
-
-       auth = Firebase.auth
-//        auth.signOut()
-       val user = auth.currentUser
-       if (user != null)
-            intent = Intent(this, HomePage::class.java)
-
-        startActivity(intent)
-        finish()
     }
 
+    @SuppressLint("SetTextI18n")
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (hasLocationPermission() && hasNotificationsPermission()) {
+            var intent = Intent(this, AuthActivity::class.java)
+            auth = Firebase.auth
+            val user = auth.currentUser
+            if (user != null)
+                intent = Intent(this, HomePageActivity::class.java)
+
+            startActivity(intent)
+            finish()
+        } else {
+            updatePermissionsText()
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    private fun updatePermissionsText() {
+        binding.locationPermissionsText.text = if (!hasLocationPermission())
+            "Location permissions are NOT granted."
+        else "Location permissions are granted."
+
+        binding.notificationPermissionsText.text = if (!hasNotificationsPermission())
+            "Notification permissions are NOT granted." else "Notification permissions are granted."
+    }
 }

@@ -30,17 +30,6 @@
             android:textColor="@color/text_color_primary"
             android:textColorHint="@color/text_color_hint" />
 
-        <EditText
-            android:id="@+id/taskDescription"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Task Description"
-            android:layout_marginBottom="16dp"
-            android:padding="12dp"
-            android:background="@drawable/edit_text_background"
-            android:textColor="@color/text_color_primary"
-            android:textColorHint="@color/text_color_hint" />
-
         <Spinner
             android:id="@+id/assigneeSpinner"
             android:layout_width="match_parent"

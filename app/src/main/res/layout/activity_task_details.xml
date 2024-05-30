@@ -38,14 +38,14 @@
             android:textColor="@color/text_color_primary" />
 
         <TextView
-            android:id="@+id/taskDescriptionLabel"
+            android:id="@+id/taskSubtasksLabel"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Description"
-            android:textSize="18sp"
-            android:textColor="@color/text_color_primary"
             android:layout_marginTop="16dp"
-            android:layout_marginBottom="4dp" />
+            android:layout_marginBottom="4dp"
+            android:text="Subtasks"
+            android:textColor="@color/text_color_primary"
+            android:textSize="18sp" />
 
         <TextView
             android:id="@+id/taskDescription"
@@ -94,23 +94,18 @@
             android:background="@drawable/text_view_background"
             android:textColor="@color/text_color_primary" />
 
-        <TextView
-            android:id="@+id/taskSubtasksLabel"
+        <Button
+            android:id="@+id/markCompleteButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Subtasks"
-            android:textSize="18sp"
-            android:textColor="@color/text_color_primary"
-            android:layout_marginTop="16dp"
-            android:layout_marginBottom="4dp" />
+            android:layout_marginTop="35dp"
+            android:text="Mark complete" />
 
-        <TextView
-            android:id="@+id/taskSubtasks"
+        <Button
+            android:id="@+id/markIncompleteButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textSize="16sp"
-            android:padding="12dp"
-            android:background="@drawable/text_view_background"
-            android:textColor="@color/text_color_primary" />
+            android:text="Mark incomplete" />
+
     </LinearLayout>
 </ScrollView>

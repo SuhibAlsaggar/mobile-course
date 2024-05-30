@@ -2,18 +2,17 @@ package com.mobilecourse.taskproject
 
 import android.content.Intent
 import android.os.Bundle
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
-import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.maps.MapView
 import com.google.android.gms.maps.model.Marker
 import com.mobilecourse.taskproject.datamodels.Task
 import com.mobilecourse.taskproject.firebaseservice.TasksAgent
+import com.mobilecourse.taskproject.navigator.Navigator
 import java.util.Calendar
 
 class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnInfoWindowClickListener {
@@ -29,6 +28,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnInfoWin
         mapView = findViewById(R.id.mapView)
         mapView.onCreate(savedInstanceState)
         mapView.getMapAsync(this)
+        Navigator.setNavigationBar(this)
     }
 
     override fun onMapReady(map: GoogleMap) {
@@ -37,8 +37,8 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnInfoWin
 
         val calendar = Calendar.getInstance()
 
-        TasksAgent.getUserTasksForDate(calendar.time) { tasks ->
-            tasks.forEach{ task ->
+        TasksAgent.getTasksForDate(calendar.time, null) { tasks ->
+            tasks.forEach { task ->
                 val latLng = LatLng(task.latLng!!.latitude, task.latLng.longitude)
                 val title = task.title
                 val marker = googleMap.addMarker(MarkerOptions().position(latLng).title(title))

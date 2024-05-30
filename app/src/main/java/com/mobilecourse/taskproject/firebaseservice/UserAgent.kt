@@ -5,18 +5,7 @@ import kotlinx.coroutines.tasks.await
 
 
 public class UserAgent {
-
-    companion object{
-        public fun getAnalytics(
-            onAnalyticsRetrieved: (List<String>) -> Unit
-        ) {
-        }
-
-        public fun getUserAnalytics(
-            onAnalyticsRetrieved: (String) -> Unit
-        ) {
-        }
-
+    companion object {
         public fun getUserRole(
             onComplete: (String) -> Unit
         ) {
@@ -28,20 +17,44 @@ public class UserAgent {
             }
 
             db.collection("users")
-                .whereEqualTo("userid",userId)
+                .whereEqualTo("userid", userId)
                 .limit(1).get().addOnCompleteListener { task ->
                     if (task.isSuccessful) {
                         val data = task.result.documents[0]
-                        if (data == null)
-                        {
+                        if (data == null) {
                             onComplete("Unknown")
                         }
                         val role = data!!["role"] as? String ?: ""
                         onComplete(role)
                     }
-            }
+                }
         }
 
+        fun getCurrentUser(onComplete: (User) -> Unit) {
+            val db = FirebaseHelper.getDb()
+            val userId = FirebaseHelper.getUserId()
+            var user = User("Unknown", "Unknown", "Unknown")
+
+            db.collection("users")
+                .whereEqualTo("userid", userId)
+                .limit(1)
+                .get().addOnCompleteListener { task ->
+                    if (task.isSuccessful) {
+                        val documents = task.result.documents
+                        if (documents.isNotEmpty()) {
+                            val document = documents.first()
+                            val data = document.data
+                            if (data != null) {
+                                val id = data["userid"] as? String ?: ""
+                                val name = data["name"] as? String ?: ""
+                                val role = data["role"] as? String ?: ""
+                                user = User(id, name, role)
+                            }
+                        }
+                    }
+                    onComplete(user)
+                }
+        }
 
         suspend fun getUserById(userId: String): User {
             val db = FirebaseHelper.getDb()
@@ -55,7 +68,7 @@ public class UserAgent {
                 val document = querySnapshot.documents.first()
                 val data = document.data
                 if (data != null) {
-                    val id = document.id
+                    val id = data["userid"] as? String ?: ""
                     val name = data["name"] as? String ?: ""
                     val role = data["role"] as? String ?: ""
                     User(id, name, role)
@@ -72,13 +85,14 @@ public class UserAgent {
         ) {
             val db = FirebaseHelper.getDb()
             db.collection("users")
+                .whereEqualTo("role", "user")
                 .get()
                 .addOnCompleteListener { task ->
                     if (task.isSuccessful) {
                         val users = task.result.documents.mapNotNull { document ->
                             val data = document.data
                             if (data != null) {
-                                val id = document.id
+                                val id = data["userid"] as? String ?: ""
                                 val name = data["name"] as? String ?: ""
                                 val role = data["role"] as? String ?: ""
                                 User(id, name, role)
@@ -92,5 +106,60 @@ public class UserAgent {
                     }
                 }
         }
+
+        public fun signIn(email: String, password: String, onComplete: (Boolean, String) -> Unit) {
+            val auth = FirebaseHelper.getAuth()
+            auth.signInWithEmailAndPassword(email, password).addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    onComplete(true, "Sign-in successful")
+                } else {
+                    onComplete(false, task.exception?.message ?: "Sign-in failed")
+                }
+            }
+        }
+
+        public fun signUp(email: String, password: String, onComplete: (Boolean, String) -> Unit) {
+            val auth = FirebaseHelper.getAuth()
+            val db = FirebaseHelper.getDb()
+            auth.createUserWithEmailAndPassword(email, password).addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    val user = auth.currentUser
+                    if (user != null) {
+                        val userId = user.uid
+                        val name = email.substringBefore('@')
+                        val userMap = hashMapOf(
+                            "userid" to userId,
+                            "role" to "user",
+                            "name" to name
+                        )
+
+                        db.collection("users")
+                            .document(userId)
+                            .set(userMap)
+                            .addOnSuccessListener {
+                                onComplete(true, "Sign-up successful")
+                            }
+                            .addOnFailureListener { e ->
+                                onComplete(false, e.message ?: "Failed to add user to database")
+                            }
+                    } else {
+                        onComplete(false, "Failed to retrieve user")
+                    }
+                } else {
+                    onComplete(false, task.exception?.message ?: "Sign-up failed")
+                }
+            }
+        }
+
+        public fun signOut(onComplete: (Boolean, String) -> Unit) {
+            val auth = FirebaseHelper.getAuth()
+            try {
+                auth.signOut()
+                onComplete(true, "Sign-out successful")
+            } catch (e: Exception) {
+                onComplete(false, e.message ?: "Sign-out failed")
+            }
+        }
+
     }
 }
